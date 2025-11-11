@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from models.chirpstack_event import ChirpStackEvent
 from sqlalchemy import func
@@ -8,22 +8,6 @@ from sqlalchemy.orm import Session
 
 class ChirpStackService:
     """Serviço para processar e armazenar eventos do ChirpStack."""
-
-    @staticmethod
-    def sanitize_payload(data: Any) -> Any:
-        """
-        Remove null bytes (\u0000) from strings in the payload recursively.
-        PostgreSQL JSONB cannot store strings with null bytes.
-        """
-        if isinstance(data, str):
-            # Remove null bytes and other problematic control characters
-            return data.replace('\x00', '').replace('\u0000', '')
-        elif isinstance(data, dict):
-            return {key: ChirpStackService.sanitize_payload(value) for key, value in data.items()}
-        elif isinstance(data, list):
-            return [ChirpStackService.sanitize_payload(item) for item in data]
-        else:
-            return data
 
     @staticmethod
     def determine_event_type(payload: Dict) -> str:
@@ -80,17 +64,14 @@ class ChirpStackService:
     def create_event(payload: Dict, db: Session) -> ChirpStackEvent:
         """Cria e salva um evento do ChirpStack no banco de dados."""
 
-        # Sanitiza o payload para remover null bytes que causam erro no PostgreSQL
-        sanitized_payload = ChirpStackService.sanitize_payload(payload)
-
-        event_type = ChirpStackService.determine_event_type(sanitized_payload)
-        device_info = sanitized_payload.get("deviceInfo", {})
+        event_type = ChirpStackService.determine_event_type(payload)
+        device_info = payload.get("deviceInfo", {})
 
         # Extrai informações comuns
         dev_eui = device_info.get("devEui", "unknown")
         device_name = device_info.get("deviceName")
         application_name = device_info.get("applicationName")
-        event_time = ChirpStackService.parse_event_time(sanitized_payload.get("time"))
+        event_time = ChirpStackService.parse_event_time(payload.get("time"))
 
         # Extrai informações específicas do tipo de evento
         event_data = {
@@ -99,37 +80,37 @@ class ChirpStackService:
             "device_name": device_name,
             "application_name": application_name,
             "event_time": event_time,
-            "payload": sanitized_payload,
+            "payload": payload,
         }
 
         # Para eventos 'up'
         if event_type == "up":
-            event_data["deduplication_id"] = sanitized_payload.get("deduplicationId")
-            event_data["f_cnt"] = sanitized_payload.get("fCnt")
-            event_data["f_port"] = sanitized_payload.get("fPort")
-            event_data["dr"] = sanitized_payload.get("dr")
+            event_data["deduplication_id"] = payload.get("deduplicationId")
+            event_data["f_cnt"] = payload.get("fCnt")
+            event_data["f_port"] = payload.get("fPort")
+            event_data["dr"] = payload.get("dr")
 
             # Informações de RF
-            rssi, snr = ChirpStackService.extract_rf_info(sanitized_payload.get("rxInfo"))
+            rssi, snr = ChirpStackService.extract_rf_info(payload.get("rxInfo"))
             event_data["rssi"] = rssi
             event_data["snr"] = snr
 
             # Informações de TX
             frequency, spreading_factor = ChirpStackService.extract_tx_info(
-                sanitized_payload.get("txInfo")
+                payload.get("txInfo")
             )
             event_data["frequency"] = frequency
             event_data["spreading_factor"] = spreading_factor
 
         # Para eventos 'join'
         elif event_type == "join":
-            event_data["deduplication_id"] = sanitized_payload.get("deduplicationId")
+            event_data["deduplication_id"] = payload.get("deduplicationId")
 
         # Para eventos 'log'
         elif event_type == "log":
-            event_data["log_level"] = sanitized_payload.get("level")
-            event_data["log_code"] = sanitized_payload.get("code")
-            event_data["log_description"] = sanitized_payload.get("description")
+            event_data["log_level"] = payload.get("level")
+            event_data["log_code"] = payload.get("code")
+            event_data["log_description"] = payload.get("description")
 
         # Cria o evento
         event = ChirpStackEvent(**event_data)
