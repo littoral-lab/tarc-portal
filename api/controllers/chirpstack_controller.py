@@ -59,6 +59,12 @@ def get_events(
     end_date: Optional[datetime] = Query(
         None, description="Filter events before this date"
     ),
+    min_id: Optional[int] = Query(
+        None, ge=1, description="Filter events with ID >= min_id"
+    ),
+    max_id: Optional[int] = Query(
+        None, ge=1, description="Filter events with ID <= max_id"
+    ),
     limit: int = Query(100, le=1000, description="Maximum number of results"),
     offset: int = Query(0, ge=0, description="Number of results to skip"),
     db: Session = Depends(get_db),
@@ -72,6 +78,8 @@ def get_events(
         event_type=event_type,
         start_date=start_date,
         end_date=end_date,
+        min_id=min_id,
+        max_id=max_id,
         limit=limit,
         offset=offset,
     )

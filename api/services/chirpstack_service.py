@@ -17,12 +17,15 @@ class ChirpStackService:
         PostgreSQL não suporta \u0000 em campos de texto/JSONB.
         """
         if isinstance(data, dict):
-            return {key: ChirpStackService.sanitize_payload(value) for key, value in data.items()}
+            return {
+                key: ChirpStackService.sanitize_payload(value)
+                for key, value in data.items()
+            }
         elif isinstance(data, list):
             return [ChirpStackService.sanitize_payload(item) for item in data]
         elif isinstance(data, str):
             # Remove caracteres NULL e outros caracteres de controle problemáticos
-            return data.replace('\x00', '').replace('\u0000', '')
+            return data.replace("\x00", "").replace("\u0000", "")
         else:
             return data
 
@@ -147,6 +150,8 @@ class ChirpStackService:
         event_type: Optional[str] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
+        min_id: Optional[int] = None,
+        max_id: Optional[int] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> List[ChirpStackEvent]:
@@ -165,6 +170,12 @@ class ChirpStackService:
 
         if end_date:
             query = query.filter(ChirpStackEvent.event_time <= end_date)
+
+        if min_id is not None:
+            query = query.filter(ChirpStackEvent.id >= min_id)
+
+        if max_id is not None:
+            query = query.filter(ChirpStackEvent.id <= max_id)
 
         query = query.order_by(ChirpStackEvent.event_time.desc())
         query = query.limit(limit).offset(offset)

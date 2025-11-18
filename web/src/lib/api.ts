@@ -142,6 +142,8 @@ export interface ChirpStackEventFilters {
   event_type?: string
   start_date?: string
   end_date?: string
+  min_id?: number
+  max_id?: number
   limit?: number
   offset?: number
 }
@@ -158,6 +160,8 @@ export async function getChirpStackEvents(
   if (filters?.event_type) params.append("event_type", filters.event_type)
   if (filters?.start_date) params.append("start_date", filters.start_date)
   if (filters?.end_date) params.append("end_date", filters.end_date)
+  if (filters?.min_id !== undefined) params.append("min_id", filters.min_id.toString())
+  if (filters?.max_id !== undefined) params.append("max_id", filters.max_id.toString())
   if (filters?.limit) params.append("limit", filters.limit.toString())
   if (filters?.offset) params.append("offset", filters.offset.toString())
 

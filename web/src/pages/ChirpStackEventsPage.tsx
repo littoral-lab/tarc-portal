@@ -43,6 +43,8 @@ export default function ChirpStackEventsPage() {
   const [selectedDevice, setSelectedDevice] = useState<string>("all");
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
   const [limit, setLimit] = useState<number>(100);
+  const [minId, setMinId] = useState<string>("");
+  const [maxId, setMaxId] = useState<string>("");
 
   const fetchData = async () => {
     try {
@@ -59,6 +61,20 @@ export default function ChirpStackEventsPage() {
 
       if (selectedEventType !== "all") {
         filters.event_type = selectedEventType;
+      }
+
+      if (minId.trim() !== "") {
+        const minIdNum = Number.parseInt(minId.trim(), 10);
+        if (!Number.isNaN(minIdNum) && minIdNum > 0) {
+          filters.min_id = minIdNum;
+        }
+      }
+
+      if (maxId.trim() !== "") {
+        const maxIdNum = Number.parseInt(maxId.trim(), 10);
+        if (!Number.isNaN(maxIdNum) && maxIdNum > 0) {
+          filters.max_id = maxIdNum;
+        }
       }
 
       const [eventsData, statsData, devicesData] = await Promise.all([
@@ -80,7 +96,7 @@ export default function ChirpStackEventsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [selectedDevice, selectedEventType, limit]);
+  }, [selectedDevice, selectedEventType, limit, minId, maxId]);
 
   const handleViewDetails = (event: ChirpStackEvent) => {
     // Abrir modal ou navegar para página de detalhes
@@ -95,6 +111,8 @@ export default function ChirpStackEventsPage() {
     setSelectedDevice("all");
     setSelectedEventType("all");
     setLimit(100);
+    setMinId("");
+    setMaxId("");
   };
 
   if (loading && events.length === 0) {
@@ -253,7 +271,7 @@ export default function ChirpStackEventsPage() {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label
                   htmlFor="device-select"
@@ -329,6 +347,57 @@ export default function ChirpStackEventsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            {/* Filtros de ID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-border">
+              <div>
+                <label
+                  htmlFor="min-id-input"
+                  className="text-sm font-medium text-foreground mb-2 block"
+                >
+                  ID Mínimo (a partir de)
+                </label>
+                <input
+                  id="min-id-input"
+                  type="number"
+                  min="1"
+                  value={minId}
+                  onChange={(e) => setMinId(e.target.value)}
+                  placeholder="Ex: 100"
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Eventos com ID maior ou igual a este valor
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="max-id-input"
+                  className="text-sm font-medium text-foreground mb-2 block"
+                >
+                  ID Máximo (até)
+                </label>
+                <input
+                  id="max-id-input"
+                  type="number"
+                  min="1"
+                  value={maxId}
+                  onChange={(e) => setMaxId(e.target.value)}
+                  placeholder="Ex: 200"
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Eventos com ID menor ou igual a este valor
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                💡 <strong>Dica:</strong> Use apenas ID Mínimo para buscar "a
+                partir do ID X", apenas ID Máximo para buscar "até o ID X", ou
+                ambos para um range específico (ex: 100 a 200).
+              </p>
             </div>
           </Card>
         )}
