@@ -1,9 +1,12 @@
+import logging
+
 from database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from schemas.ml_analysis import MLAnalysisRequest, MLAnalysisResponse
 from services.ml_analysis_service import MLAnalysisService
 from sqlalchemy.orm import Session
 
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["ml-analysis"])
 
 
@@ -25,8 +28,14 @@ def analyze_data(
     - rssi: Sinal RSSI (se disponível)
     - vazao: Vazão/Fluxo
     """
+    logger.info(
+        f"📊 Iniciando análise ML - Tipo: {request.analysis_type.value}, "
+        f"Campo: {request.target_field.value}, Período: {request.time_range}"
+    )
+
     try:
         # Executar análise
+        logger.info("🔄 Executando análise...")
         results = MLAnalysisService.perform_analysis(
             db=db,
             analysis_type=request.analysis_type.value,
@@ -36,6 +45,7 @@ def analyze_data(
 
         # Verificar se houve erro
         if "error" in results:
+            logger.error(f"❌ Erro na análise: {results['error']}")
             raise HTTPException(status_code=400, detail=results["error"])
 
         # Preparar resposta
@@ -46,6 +56,8 @@ def analyze_data(
             "timestamp": datetime.now().isoformat(),
         }
 
+        logger.info("✅ Análise concluída com sucesso")
+
         return MLAnalysisResponse(
             analysis_type=request.analysis_type.value,
             target_field=request.target_field.value,
@@ -54,9 +66,11 @@ def analyze_data(
             metadata=metadata,
             message="Análise concluída com sucesso",
         )
-    except HTTPException:
+    except HTTPException as e:
+        logger.error(f"❌ HTTPException: {e.detail}")
         raise
     except Exception as e:
+        logger.exception(f"❌ Erro inesperado ao realizar análise: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Erro ao realizar análise: {str(e)}"
         )
