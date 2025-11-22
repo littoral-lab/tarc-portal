@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/config";
 import {
   Card,
   CardContent,
@@ -8,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSelector } from "@/components/language-selector";
 import {
   Select,
   SelectContent,
@@ -32,6 +35,7 @@ import {
 import { Link } from "react-router-dom";
 
 export default function MLAnalysisPage() {
+  const { t, i18n } = useTranslation();
   const [analysisType, setAnalysisType] = useState<
     "clustering" | "prediction" | "classification"
   >("clustering");
@@ -59,7 +63,7 @@ export default function MLAnalysisPage() {
       const response = await performMLAnalysis(request);
       setResult(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao realizar análise");
+      setError(err instanceof Error ? err.message : t("mlAnalysis.error"));
       console.error("Erro ao realizar análise:", err);
     } finally {
       setLoading(false);
@@ -88,7 +92,7 @@ export default function MLAnalysisPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Total de Pontos
+                {t("mlAnalysis.results.totalPoints")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.total_points || 0}
@@ -96,14 +100,16 @@ export default function MLAnalysisPage() {
             </Card>
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Número de Clusters
+                {t("mlAnalysis.results.numClusters")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.n_clusters || 0}
               </div>
             </Card>
             <Card className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Inércia</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                {t("mlAnalysis.results.inertia")}
+              </div>
               <div className="text-2xl font-semibold">
                 {results.inertia ? results.inertia.toFixed(2) : "—"}
               </div>
@@ -113,40 +119,48 @@ export default function MLAnalysisPage() {
           {results.cluster_stats && results.cluster_stats.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">
-                Estatísticas por Cluster
+                {t("mlAnalysis.results.clusterStats")}
               </h3>
               <div className="grid gap-4">
                 {results.cluster_stats.map((cluster: any) => (
                   <Card key={cluster.cluster_id} className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">
-                        Cluster {cluster.cluster_id}
+                        {t("mlAnalysis.results.cluster")} {cluster.cluster_id}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {cluster.count} pontos
+                        {cluster.count} {t("mlAnalysis.results.points")}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                       <div>
-                        <span className="text-muted-foreground">Média: </span>
+                        <span className="text-muted-foreground">
+                          {t("mlAnalysis.results.mean")}:{" "}
+                        </span>
                         <span className="font-medium">
                           {cluster.mean.toFixed(2)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Desvio: </span>
+                        <span className="text-muted-foreground">
+                          {t("mlAnalysis.results.std")}:{" "}
+                        </span>
                         <span className="font-medium">
                           {cluster.std.toFixed(2)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Mín: </span>
+                        <span className="text-muted-foreground">
+                          {t("common.min")}:{" "}
+                        </span>
                         <span className="font-medium">
                           {cluster.min.toFixed(2)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Máx: </span>
+                        <span className="text-muted-foreground">
+                          {t("common.max")}:{" "}
+                        </span>
                         <span className="font-medium">
                           {cluster.max.toFixed(2)}
                         </span>
@@ -161,7 +175,7 @@ export default function MLAnalysisPage() {
           {results.cluster_centers && results.cluster_centers.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                Centros dos Clusters
+                {t("mlAnalysis.results.clusterCenters")}
               </h3>
               <div className="flex gap-2 flex-wrap">
                 {results.cluster_centers.map((center: number, idx: number) => (
@@ -170,7 +184,7 @@ export default function MLAnalysisPage() {
                     variant="outline"
                     className="text-sm"
                   >
-                    Cluster {idx}: {center.toFixed(2)}
+                    {t("mlAnalysis.results.cluster")} {idx}: {center.toFixed(2)}
                   </Badge>
                 ))}
               </div>
@@ -186,7 +200,7 @@ export default function MLAnalysisPage() {
           <div className="grid grid-cols-2 gap-4">
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Score do Modelo
+                {t("mlAnalysis.results.modelScore")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.model_score
@@ -197,7 +211,7 @@ export default function MLAnalysisPage() {
             </Card>
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Previsões Geradas
+                {t("mlAnalysis.results.predictionsGenerated")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.predictions ? results.predictions.length : 0}
@@ -207,21 +221,25 @@ export default function MLAnalysisPage() {
 
           {results.predictions && results.predictions.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold mb-3">Previsões Futuras</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                {t("mlAnalysis.results.futurePredictions")}
+              </h3>
               <div className="space-y-2">
                 {results.predictions.map((pred: any) => (
                   <Card key={pred.step} className="p-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-sm text-muted-foreground">
-                          Passo {pred.step}
+                          {t("mlAnalysis.results.step")} {pred.step}
                         </span>
                         <div className="text-lg font-semibold">
                           {pred.predicted_value.toFixed(2)}
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(pred.timestamp).toLocaleString("pt-BR")}
+                        {new Date(pred.timestamp).toLocaleString(
+                          i18n.language === "pt-BR" ? "pt-BR" : "en-US"
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -233,7 +251,7 @@ export default function MLAnalysisPage() {
           {results.feature_importance && (
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                Importância das Features
+                {t("mlAnalysis.results.featureImportance")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(results.feature_importance).map(
@@ -267,7 +285,7 @@ export default function MLAnalysisPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Acurácia do Modelo
+                {t("mlAnalysis.results.modelAccuracy")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.model_accuracy
@@ -278,7 +296,7 @@ export default function MLAnalysisPage() {
             </Card>
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">
-                Total Classificado
+                {t("mlAnalysis.results.totalClassified")}
               </div>
               <div className="text-2xl font-semibold">
                 {results.total_classified || 0}
@@ -289,12 +307,12 @@ export default function MLAnalysisPage() {
           {results.class_thresholds && (
             <div>
               <h3 className="text-lg font-semibold mb-2">
-                Limiares de Classificação
+                {t("mlAnalysis.results.classThresholds")}
               </h3>
               <div className="grid grid-cols-3 gap-4">
                 <Card className="p-4">
                   <div className="text-sm text-muted-foreground mb-1">
-                    Baixo
+                    {t("mlAnalysis.results.low")}
                   </div>
                   <div className="text-xl font-semibold">
                     &lt; {results.class_thresholds.baixo.toFixed(2)}
@@ -302,7 +320,7 @@ export default function MLAnalysisPage() {
                 </Card>
                 <Card className="p-4">
                   <div className="text-sm text-muted-foreground mb-1">
-                    Normal
+                    {t("mlAnalysis.results.normal")}
                   </div>
                   <div className="text-xl font-semibold">
                     {results.class_thresholds.baixo.toFixed(2)} -{" "}
@@ -310,7 +328,9 @@ export default function MLAnalysisPage() {
                   </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground mb-1">Alto</div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    {t("mlAnalysis.results.high")}
+                  </div>
                   <div className="text-xl font-semibold">
                     &gt; {results.class_thresholds.alto.toFixed(2)}
                   </div>
@@ -322,7 +342,7 @@ export default function MLAnalysisPage() {
           {results.class_distribution && (
             <div>
               <h3 className="text-lg font-semibold mb-3">
-                Distribuição de Classes
+                {t("mlAnalysis.results.classDistribution")}
               </h3>
               <div className="space-y-2">
                 {Object.entries(results.class_distribution).map(
@@ -376,17 +396,20 @@ export default function MLAnalysisPage() {
             <div>
               <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
                 <Brain className="w-6 h-6" />
-                Análise de Machine Learning
+                {t("mlAnalysis.title")}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Análise de dados de sensores com algoritmos de ML
+                {t("mlAnalysis.subtitle")}
               </p>
             </div>
-            <Link to="/">
-              <Button variant="outline" size="sm">
-                Voltar ao Dashboard
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <LanguageSelector />
+              <Link to="/">
+                <Button variant="outline" size="sm">
+                  {t("common.backToDashboard")}
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -395,10 +418,9 @@ export default function MLAnalysisPage() {
         {/* Formulário de Análise */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Configurar Análise</CardTitle>
+            <CardTitle>{t("mlAnalysis.configure")}</CardTitle>
             <CardDescription>
-              Selecione os parâmetros para realizar a análise de Machine
-              Learning
+              {t("mlAnalysis.configureDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -408,7 +430,7 @@ export default function MLAnalysisPage() {
                   htmlFor="analysis-type"
                   className="text-sm font-medium mb-2 block"
                 >
-                  Tipo de Análise
+                  {t("mlAnalysis.analysisType")}
                 </label>
                 <Select
                   name="analysis-type"
@@ -426,19 +448,19 @@ export default function MLAnalysisPage() {
                     <SelectItem value="clustering">
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4" />
-                        Clustering
+                        {t("mlAnalysis.clustering")}
                       </div>
                     </SelectItem>
                     <SelectItem value="prediction">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
-                        Predição
+                        {t("mlAnalysis.prediction")}
                       </div>
                     </SelectItem>
                     <SelectItem value="classification">
                       <div className="flex items-center gap-2">
                         <BarChart3 className="w-4 h-4" />
-                        Classificação
+                        {t("mlAnalysis.classification")}
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -450,7 +472,7 @@ export default function MLAnalysisPage() {
                   htmlFor="target-field"
                   className="text-sm font-medium mb-2 block"
                 >
-                  Campo Alvo
+                  {t("mlAnalysis.targetField")}
                 </label>
                 <Select
                   name="target-field"
@@ -465,10 +487,14 @@ export default function MLAnalysisPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="temperature">Temperatura</SelectItem>
-                    <SelectItem value="humidity">Umidade</SelectItem>
+                    <SelectItem value="temperature">
+                      {t("common.temperature")}
+                    </SelectItem>
+                    <SelectItem value="humidity">
+                      {t("common.humidity")}
+                    </SelectItem>
                     <SelectItem value="rssi">RSSI</SelectItem>
-                    <SelectItem value="vazao">Vazão</SelectItem>
+                    <SelectItem value="vazao">{t("common.flow")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -478,7 +504,7 @@ export default function MLAnalysisPage() {
                   htmlFor="time-range"
                   className="text-sm font-medium mb-2 block"
                 >
-                  Período
+                  {t("mlAnalysis.timeRange")}
                 </label>
                 <Select
                   name="time-range"
@@ -489,13 +515,17 @@ export default function MLAnalysisPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="last_24h">Últimas 24 horas</SelectItem>
-                    <SelectItem value="last_7_days">Últimos 7 dias</SelectItem>
+                    <SelectItem value="last_24h">
+                      {t("mlAnalysis.timeRanges.last_24h")}
+                    </SelectItem>
+                    <SelectItem value="last_7_days">
+                      {t("mlAnalysis.timeRanges.last_7_days")}
+                    </SelectItem>
                     <SelectItem value="last_30_days">
-                      Últimos 30 dias
+                      {t("mlAnalysis.timeRanges.last_30_days")}
                     </SelectItem>
                     <SelectItem value="last_90_days">
-                      Últimos 90 dias
+                      {t("mlAnalysis.timeRanges.last_90_days")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -511,12 +541,12 @@ export default function MLAnalysisPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Analisando...
+                  {t("mlAnalysis.analyzing")}
                 </>
               ) : (
                 <>
                   {getAnalysisIcon()}
-                  Executar Análise
+                  {t("mlAnalysis.execute")}
                 </>
               )}
             </Button>
@@ -529,7 +559,7 @@ export default function MLAnalysisPage() {
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-destructive">
                 <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Erro</span>
+                <span className="font-medium">{t("common.error")}</span>
               </div>
               <p className="mt-2 text-sm">{error}</p>
             </CardContent>
@@ -543,7 +573,7 @@ export default function MLAnalysisPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    Resultados da Análise
+                    {t("mlAnalysis.results")}
                   </CardTitle>
                   <CardDescription className="mt-1">
                     {result.analysis_type} - {result.target_field} -{" "}
@@ -551,7 +581,9 @@ export default function MLAnalysisPage() {
                   </CardDescription>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {new Date(result.metadata.timestamp).toLocaleString("pt-BR")}
+                  {new Date(result.metadata.timestamp).toLocaleString(
+                    i18n.language === "pt-BR" ? "pt-BR" : "en-US"
+                  )}
                 </div>
               </div>
             </CardHeader>

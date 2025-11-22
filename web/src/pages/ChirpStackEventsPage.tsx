@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/config";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,7 @@ import {
 } from "lucide-react";
 import { ChirpStackEventsTable } from "@/components/chirpstack-events-table";
 import { ChirpStackCharts } from "@/components/chirpstack-charts";
+import { LanguageSelector } from "@/components/language-selector";
 import {
   getChirpStackEvents,
   getChirpStackStats,
@@ -32,6 +35,7 @@ import {
 } from "@/components/ui/select";
 
 export default function ChirpStackEventsPage() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<ChirpStackEvent[]>([]);
   const [stats, setStats] = useState<ChirpStackEventStats | null>(null);
   const [devices, setDevices] = useState<ChirpStackDevice[]>([]);
@@ -87,7 +91,7 @@ export default function ChirpStackEventsPage() {
       setStats(statsData);
       setDevices(devicesData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      setError(err instanceof Error ? err.message : t("chirpstack.error"));
       console.error("Erro ao buscar dados:", err);
     } finally {
       setLoading(false);
@@ -120,7 +124,7 @@ export default function ChirpStackEventsPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Carregando eventos...</p>
+          <p className="text-muted-foreground">{t("chirpstack.loading")}</p>
         </div>
       </div>
     );
@@ -134,20 +138,21 @@ export default function ChirpStackEventsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-foreground">
-                Eventos ChirpStack
+                {t("chirpstack.title")}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Visualização e monitoramento de eventos do ChirpStack
+                {t("chirpstack.subtitle")}
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <LanguageSelector />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="w-4 h-4 mr-2" />
-                Filtros
+                {t("common.filters")}
               </Button>
               <Button
                 variant="outline"
@@ -158,12 +163,12 @@ export default function ChirpStackEventsPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Atualizando...
+                    {t("common.updating")}
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2" />
-                    Atualizar
+                    {t("common.update")}
                   </>
                 )}
               </Button>
@@ -186,7 +191,7 @@ export default function ChirpStackEventsPage() {
         {stats && (
           <div className="mb-8">
             <h2 className="text-lg font-medium text-foreground mb-4">
-              Estatísticas
+              {t("chirpstack.stats")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="p-6 bg-card border-border">
@@ -196,7 +201,7 @@ export default function ChirpStackEventsPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Total de Eventos
+                  {t("chirpstack.totalEvents")}
                 </h3>
                 <p className="text-3xl font-semibold text-foreground">
                   {stats.total_events}
@@ -210,7 +215,7 @@ export default function ChirpStackEventsPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Dispositivos Únicos
+                  {t("chirpstack.uniqueDevices")}
                 </h3>
                 <p className="text-3xl font-semibold text-foreground">
                   {stats.unique_devices}
@@ -224,11 +229,13 @@ export default function ChirpStackEventsPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Último Evento
+                  {t("chirpstack.latestEvent")}
                 </h3>
                 <p className="text-sm font-semibold text-foreground">
                   {stats.latest_event
-                    ? new Date(stats.latest_event).toLocaleString("pt-BR")
+                    ? new Date(stats.latest_event).toLocaleString(
+                        i18n.language === "pt-BR" ? "pt-BR" : "en-US"
+                      )
                     : "—"}
                 </p>
               </Card>
@@ -240,7 +247,7 @@ export default function ChirpStackEventsPage() {
                   </div>
                 </div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Eventos por Tipo
+                  {t("chirpstack.eventsByType")}
                 </h3>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {Object.entries(stats.events_by_type).map(([type, count]) => (
@@ -258,7 +265,9 @@ export default function ChirpStackEventsPage() {
         {showFilters && (
           <Card className="mb-6 p-6 bg-card border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-foreground">Filtros</h3>
+              <h3 className="text-lg font-medium text-foreground">
+                {t("common.filters")}
+              </h3>
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -267,7 +276,7 @@ export default function ChirpStackEventsPage() {
                   className="text-muted-foreground"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Limpar
+                  {t("common.clear")}
                 </Button>
               </div>
             </div>
@@ -277,17 +286,19 @@ export default function ChirpStackEventsPage() {
                   htmlFor="device-select"
                   className="text-sm font-medium text-foreground mb-2 block"
                 >
-                  Dispositivo
+                  {t("chirpstack.device")}
                 </label>
                 <Select
                   value={selectedDevice}
                   onValueChange={setSelectedDevice}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos os dispositivos" />
+                    <SelectValue placeholder={t("chirpstack.allDevices")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os dispositivos</SelectItem>
+                    <SelectItem value="all">
+                      {t("chirpstack.allDevices")}
+                    </SelectItem>
                     {devices.map((device: ChirpStackDevice) => (
                       <SelectItem key={device.dev_eui} value={device.dev_eui}>
                         {device.device_name ?? device.dev_eui} (
@@ -303,17 +314,19 @@ export default function ChirpStackEventsPage() {
                   htmlFor="event-type-select"
                   className="text-sm font-medium text-foreground mb-2 block"
                 >
-                  Tipo de Evento
+                  {t("chirpstack.eventType")}
                 </label>
                 <Select
                   value={selectedEventType}
                   onValueChange={setSelectedEventType}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos os tipos" />
+                    <SelectValue placeholder={t("chirpstack.allTypes")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os tipos</SelectItem>
+                    <SelectItem value="all">
+                      {t("chirpstack.allTypes")}
+                    </SelectItem>
                     <SelectItem value="up">UP (Uplink)</SelectItem>
                     <SelectItem value="join">JOIN</SelectItem>
                     <SelectItem value="log">LOG</SelectItem>
@@ -327,7 +340,7 @@ export default function ChirpStackEventsPage() {
                   htmlFor="limit-select"
                   className="text-sm font-medium text-foreground mb-2 block"
                 >
-                  Limite de Resultados
+                  {t("chirpstack.resultLimit")}
                 </label>
                 <Select
                   value={limit.toString()}
@@ -356,7 +369,7 @@ export default function ChirpStackEventsPage() {
                   htmlFor="min-id-input"
                   className="text-sm font-medium text-foreground mb-2 block"
                 >
-                  ID Mínimo (a partir de)
+                  {t("chirpstack.minId")}
                 </label>
                 <input
                   id="min-id-input"
@@ -368,7 +381,7 @@ export default function ChirpStackEventsPage() {
                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Eventos com ID maior ou igual a este valor
+                  {t("chirpstack.minIdDescription")}
                 </p>
               </div>
               <div>
@@ -376,7 +389,7 @@ export default function ChirpStackEventsPage() {
                   htmlFor="max-id-input"
                   className="text-sm font-medium text-foreground mb-2 block"
                 >
-                  ID Máximo (até)
+                  {t("chirpstack.maxId")}
                 </label>
                 <input
                   id="max-id-input"
@@ -388,15 +401,13 @@ export default function ChirpStackEventsPage() {
                   className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Eventos com ID menor ou igual a este valor
+                  {t("chirpstack.maxIdDescription")}
                 </p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                💡 <strong>Dica:</strong> Use apenas ID Mínimo para buscar "a
-                partir do ID X", apenas ID Máximo para buscar "até o ID X", ou
-                ambos para um range específico (ex: 100 a 200).
+                {t("chirpstack.filterTip")}
               </p>
             </div>
           </Card>
@@ -406,7 +417,7 @@ export default function ChirpStackEventsPage() {
         {events.length > 0 && (
           <div className="mb-8">
             <h2 className="text-lg font-medium text-foreground mb-4">
-              Análise de Dados RF
+              {t("chirpstack.rfAnalysis")}
             </h2>
             <ChirpStackCharts events={events} />
           </div>
@@ -416,7 +427,7 @@ export default function ChirpStackEventsPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium text-foreground">
-              Eventos ({events.length})
+              {t("chirpstack.events")} ({events.length})
             </h2>
           </div>
           <ChirpStackEventsTable

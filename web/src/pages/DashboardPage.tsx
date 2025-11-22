@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,12 @@ import {
   Brain,
 } from "lucide-react";
 import { DeviceTable } from "@/components/device-table";
+import { LanguageSelector } from "@/components/language-selector";
 import { getDevices, getStats, type Device, type Stats } from "@/lib/api";
 import { Link } from "react-router-dom";
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [devices, setDevices] = useState<Device[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ export default function DashboardPage() {
       setDevices(devicesData);
       setStats(statsData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      setError(err instanceof Error ? err.message : t("common.error"));
       console.error("Erro ao buscar dados:", err);
     } finally {
       setLoading(false);
@@ -49,7 +52,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Carregando dispositivos...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -61,7 +64,7 @@ export default function DashboardPage() {
         <div className="text-center max-w-md">
           <AlertCircle className="w-8 h-8 mx-auto mb-4 text-destructive" />
           <p className="text-destructive mb-4">{error}</p>
-          <Button onClick={fetchData}>Tentar Novamente</Button>
+          <Button onClick={fetchData}>{t("common.retry")}</Button>
         </div>
       </div>
     );
@@ -103,22 +106,23 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-foreground">
-                Plataforma IoT
+                {t("dashboard.title")}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Monitoramento e gerenciamento de dispositivos
+                {t("dashboard.subtitle")}
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <LanguageSelector />
               <Link to="/chirpstack/events">
                 <Button variant="outline" size="sm">
                   <Radio className="w-4 h-4 mr-2" />
-                  Eventos ChirpStack
+                  {t("dashboard.chirpstackEvents")}
                 </Button>
               </Link>
               <Badge variant="outline" className="gap-2">
                 <Server className="w-3 h-3" />
-                {allDevices.length} Dispositivo
+                {allDevices.length} {t("common.device")}
                 {allDevices.length !== 1 ? "s" : ""}
               </Badge>
             </div>
@@ -130,7 +134,7 @@ export default function DashboardPage() {
         {/* Stats Overview */}
         <div className="mb-8">
           <h2 className="text-lg font-medium text-foreground mb-4">
-            Visão Geral
+            {t("dashboard.overview")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="p-6 bg-card border-border">
@@ -140,7 +144,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Dispositivos Online
+                {t("dashboard.onlineDevices")}
               </h3>
               <p className="text-3xl font-semibold text-foreground">
                 {onlineDevices}
@@ -149,7 +153,7 @@ export default function DashboardPage() {
                 {allDevices.length > 0
                   ? ((onlineDevices / allDevices.length) * 100).toFixed(0)
                   : 0}
-                % do total
+                % {t("dashboard.ofTotal")}
               </p>
             </Card>
 
@@ -160,7 +164,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Dispositivos Offline
+                {t("dashboard.offlineDevices")}
               </h3>
               <p className="text-3xl font-semibold text-foreground">
                 {offlineDevices}
@@ -169,7 +173,7 @@ export default function DashboardPage() {
                 {allDevices.length > 0
                   ? ((offlineDevices / allDevices.length) * 100).toFixed(0)
                   : 0}
-                % do total
+                % {t("dashboard.ofTotal")}
               </p>
             </Card>
 
@@ -180,17 +184,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Temperatura Média
+                {t("dashboard.avgTemperature")}
               </h3>
               <p className="text-3xl font-semibold text-foreground">
                 {avgTemperature > 0 ? `${avgTemperature.toFixed(1)}°C` : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 {devicesWithTemp.length > 0
-                  ? `${devicesWithTemp.length} dispositivo${
+                  ? `${devicesWithTemp.length} ${t("common.device")}${
                       devicesWithTemp.length > 1 ? "s" : ""
                     }`
-                  : "Nenhum dado"}
+                  : t("dashboard.noData")}
               </p>
             </Card>
 
@@ -201,17 +205,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Umidade Média
+                {t("dashboard.avgHumidity")}
               </h3>
               <p className="text-3xl font-semibold text-foreground">
                 {avgHumidity > 0 ? `${avgHumidity.toFixed(1)}%` : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 {devicesWithHumidity.length > 0
-                  ? `${devicesWithHumidity.length} dispositivo${
+                  ? `${devicesWithHumidity.length} ${t("common.device")}${
                       devicesWithHumidity.length > 1 ? "s" : ""
                     }`
-                  : "Nenhum dado"}
+                  : t("dashboard.noData")}
               </p>
             </Card>
           </div>
@@ -227,18 +231,17 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-1">
-                    Eventos ChirpStack
+                    {t("dashboard.chirpstackEvents")}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Visualize e analise eventos do ChirpStack com gráficos de
-                    SNR, RSSI, frequência e DR
+                    {t("dashboard.chirpstackEventsDescription")}
                   </p>
                 </div>
               </div>
               <Link to="/chirpstack/events">
                 <Button size="lg" className="bg-blue-500 hover:bg-blue-600">
                   <Radio className="w-5 h-5 mr-2" />
-                  Ver Eventos
+                  {t("dashboard.viewEvents")}
                 </Button>
               </Link>
             </div>
@@ -252,18 +255,17 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-1">
-                    Análise de Machine Learning
+                    {t("dashboard.mlAnalysis")}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Execute análises de clustering, predição e classificação nos
-                    dados de sensores
+                    {t("dashboard.mlAnalysisDescription")}
                   </p>
                 </div>
               </div>
               <Link to="/ml/analysis">
                 <Button size="lg" className="bg-purple-500 hover:bg-purple-600">
                   <Brain className="w-5 h-5 mr-2" />
-                  Analisar
+                  {t("dashboard.analyze")}
                 </Button>
               </Link>
             </div>
@@ -274,7 +276,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-medium text-foreground">
-              Dispositivos Cadastrados
+              {t("dashboard.registeredDevices")}
             </h2>
             <Button
               variant="outline"
@@ -285,10 +287,10 @@ export default function DashboardPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Atualizando...
+                  {t("common.updating")}
                 </>
               ) : (
-                "Atualizar"
+                t("common.update")
               )}
             </Button>
           </div>

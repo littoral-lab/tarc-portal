@@ -3,6 +3,7 @@ import DashboardPage from "./pages/DashboardPage";
 import DevicePage from "./pages/DevicePage";
 import ChirpStackEventsPage from "./pages/ChirpStackEventsPage";
 import MLAnalysisPage from "./pages/MLAnalysisPage";
+import "./i18n/config";
 
 function App() {
   return (

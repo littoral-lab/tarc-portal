@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
 } from "@/components/ui/table";
 
 export default function DevicePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [timeRange, setTimeRange] = useState("24h");
   const [device, setDevice] = useState<Device | null>(null);
@@ -55,9 +57,7 @@ export default function DevicePage() {
         const deviceData = await getDevice(id);
         setDevice(deviceData);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Erro ao carregar dispositivo"
-        );
+        setError(err instanceof Error ? err.message : t("device.error"));
         console.error("Erro ao buscar dispositivo:", err);
       } finally {
         setLoading(false);
@@ -88,7 +88,7 @@ export default function DevicePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Carregando dispositivo...</p>
+          <p className="text-muted-foreground">{t("device.loading")}</p>
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function DevicePage() {
         <div className="text-center max-w-md">
           <AlertCircle className="w-8 h-8 mx-auto mb-4 text-destructive" />
           <p className="text-destructive mb-4">
-            {error || "Dispositivo não encontrado"}
+            {error || t("device.notFound")}
           </p>
           <div className="flex gap-4 justify-center">
             <Button
@@ -114,9 +114,7 @@ export default function DevicePage() {
                     setDevice(deviceData);
                   } catch (err) {
                     setError(
-                      err instanceof Error
-                        ? err.message
-                        : "Erro ao carregar dispositivo"
+                      err instanceof Error ? err.message : t("device.error")
                     );
                     console.error("Erro ao buscar dispositivo:", err);
                   } finally {
@@ -126,10 +124,10 @@ export default function DevicePage() {
                 fetchDeviceData();
               }}
             >
-              Tentar Novamente
+              {t("common.retry")}
             </Button>
             <Link to="/">
-              <Button variant="outline">Voltar ao Dashboard</Button>
+              <Button variant="outline">{t("common.backToDashboard")}</Button>
             </Link>
           </div>
         </div>
@@ -147,7 +145,7 @@ export default function DevicePage() {
               <Link to="/">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar
+                  {t("common.back")}
                 </Button>
               </Link>
               <div>
@@ -175,17 +173,23 @@ export default function DevicePage() {
                       : "bg-muted-foreground"
                   }`}
                 />
-                {device.status === "online" ? "Online" : "Offline"}
+                {device.status === "online"
+                  ? t("common.online")
+                  : t("common.offline")}
               </Badge>
               <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1h">Última hora</SelectItem>
-                  <SelectItem value="24h">Últimas 24h</SelectItem>
-                  <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                  <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                  <SelectItem value="1h">{t("device.timeRange.1h")}</SelectItem>
+                  <SelectItem value="24h">
+                    {t("device.timeRange.24h")}
+                  </SelectItem>
+                  <SelectItem value="7d">{t("device.timeRange.7d")}</SelectItem>
+                  <SelectItem value="30d">
+                    {t("device.timeRange.30d")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -197,7 +201,7 @@ export default function DevicePage() {
         {/* Current Readings */}
         <div className="mb-8">
           <h2 className="text-lg font-medium text-foreground mb-4">
-            Leituras Atuais
+            {t("device.currentReadings")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {device.lastReading.t > 0 && (
@@ -207,7 +211,9 @@ export default function DevicePage() {
                     <Thermometer className="w-5 h-5 text-chart-1" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Temperatura</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.temperature")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.t.toFixed(1)}°C
                     </p>
@@ -223,7 +229,9 @@ export default function DevicePage() {
                     <Droplets className="w-5 h-5 text-chart-2" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Umidade</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.humidity")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.h.toFixed(1)}%
                     </p>
@@ -239,7 +247,9 @@ export default function DevicePage() {
                     <Wind className="w-5 h-5 text-chart-3" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Gás</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.gas")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.g.toFixed(0)} ppm
                     </p>
@@ -255,7 +265,9 @@ export default function DevicePage() {
                     <Gauge className="w-5 h-5 text-chart-4" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Fluxo</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.flow")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.fluxo.toFixed(2)}
                     </p>
@@ -271,7 +283,9 @@ export default function DevicePage() {
                     <Zap className="w-5 h-5 text-chart-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Pulsos</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.pulses")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.pulso}
                     </p>
@@ -287,7 +301,9 @@ export default function DevicePage() {
                     <TreePine className="w-5 h-5 text-orange-500" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Solo</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("common.soil")}
+                    </p>
                     <p className="text-xl font-semibold text-foreground">
                       {device.lastReading.solo.toFixed(1)}
                     </p>
@@ -301,7 +317,7 @@ export default function DevicePage() {
         {/* Charts */}
         <div className="mb-8">
           <h2 className="text-lg font-medium text-foreground mb-4">
-            Histórico de Leituras
+            {t("device.readingHistory")}
           </h2>
           <DeviceCharts data={historicalData} timeRange={timeRange} />
         </div>
@@ -309,30 +325,30 @@ export default function DevicePage() {
         {/* Data Table */}
         <div>
           <h2 className="text-lg font-medium text-foreground mb-4">
-            Dados Detalhados
+            {t("device.detailedData")}
           </h2>
           <Card className="bg-card border-border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Timestamp</TableHead>
+                  <TableHead>{t("common.timestamp")}</TableHead>
                   {historicalData.some((r) => r.t > 0) && (
-                    <TableHead>Temperatura</TableHead>
+                    <TableHead>{t("common.temperature")}</TableHead>
                   )}
                   {historicalData.some((r) => r.h > 0) && (
-                    <TableHead>Umidade</TableHead>
+                    <TableHead>{t("common.humidity")}</TableHead>
                   )}
                   {historicalData.some((r) => r.g > 0) && (
-                    <TableHead>Gás</TableHead>
+                    <TableHead>{t("common.gas")}</TableHead>
                   )}
                   {historicalData.some((r) => r.fluxo > 0) && (
-                    <TableHead>Fluxo</TableHead>
+                    <TableHead>{t("common.flow")}</TableHead>
                   )}
                   {historicalData.some((r) => r.pulso > 0) && (
-                    <TableHead>Pulsos</TableHead>
+                    <TableHead>{t("common.pulses")}</TableHead>
                   )}
                   {historicalData.some((r) => r.solo > 0) && (
-                    <TableHead>Solo</TableHead>
+                    <TableHead>{t("common.soil")}</TableHead>
                   )}
                 </TableRow>
               </TableHeader>

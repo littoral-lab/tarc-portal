@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,19 +19,20 @@ interface DeviceTableProps {
 }
 
 export function DeviceTable({ devices }: DeviceTableProps) {
+  const { t } = useTranslation();
   return (
     <Card className="bg-card border-border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>ID</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Localização</TableHead>
-            <TableHead>Última Atualização</TableHead>
-            <TableHead>Temperatura</TableHead>
-            <TableHead>Umidade</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+            <TableHead>{t("common.name")}</TableHead>
+            <TableHead>{t("common.id")}</TableHead>
+            <TableHead>{t("common.status")}</TableHead>
+            <TableHead>{t("common.location")}</TableHead>
+            <TableHead>{t("common.lastUpdate")}</TableHead>
+            <TableHead>{t("common.temperature")}</TableHead>
+            <TableHead>{t("common.humidity")}</TableHead>
+            <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -54,7 +56,9 @@ export function DeviceTable({ devices }: DeviceTableProps) {
                         : "bg-muted-foreground"
                     }`}
                   />
-                  {device.status === "online" ? "Online" : "Offline"}
+                  {device.status === "online"
+                    ? t("common.online")
+                    : t("common.offline")}
                 </Badge>
               </TableCell>
               <TableCell>{device.location}</TableCell>
@@ -75,7 +79,7 @@ export function DeviceTable({ devices }: DeviceTableProps) {
                 <Link to={`/device/${device.id}`}>
                   <Button variant="ghost" size="sm">
                     <Eye className="w-4 h-4 mr-2" />
-                    Ver Detalhes
+                    {t("common.viewDetails")}
                   </Button>
                 </Link>
               </TableCell>
